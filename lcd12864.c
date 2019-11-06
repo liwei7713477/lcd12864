@@ -8,27 +8,27 @@
 
 
 // signal port
-#define     CS
-#define     RS
-#define     RD
-#define     WD
-#define     RES
+#define     CS  24
+#define     RS  7
+#define     RD  6
+#define     WD  0
+#define     RES 25
 
 // 8bit data port
-#define     D0
-#define     D1
-#define     D2
-#define     D3
-#define     D4
-#define     D5
-#define     D6
-#define     D7
+#define     D0  1
+#define     D1  2
+#define     D2  3
+#define     D3  4
+#define     D4  5
+#define     D5  21
+#define     D6  22
+#define     D7  23
 
 
 /*
 * 8bit bus write
 */
-void bus_write(uchar data)
+void bus_write(unsigned char data)
 {
     char array[10];
     int i=0;
@@ -50,7 +50,7 @@ void bus_write(uchar data)
 /*
 * LCD12864 write command
 */
-void lcd12864_write_com(uchar com)
+void lcd12864_write_com(unsigned char com)
 {
     digitalWrite(RS,0); // write command
     digitalWrite(RD,1);
@@ -64,7 +64,7 @@ void lcd12864_write_com(uchar com)
 /*
 * LCD12864 write data
 */
-void lcd12864_write_data(uchar data)
+void lcd12864_write_data(unsigned char data)
 {
     digitalWrite(RS,1); // write date
     digitalWrite(RD,1);
@@ -87,7 +87,25 @@ void lcd12864_init()
     digitalWrite(CS,0);  // chipselect enable
 
     // set register
+    lcd12864_write_com(0xe2);//internal reset
+    lcd12864_write_com(0xa0); //ADC select normal mode
+    lcd12864_write_com(0xa6); //Display normal
+    lcd12864_write_com(0xa0); //LCD bias set :1/9 bias
+    lcd12864_write_com(0xc0); // Common output mode select :normal
+    lcd12864_write_com(0x2f); //Power control set
+    lcd12864_write_com(0x27);//V0 voltage regulator internal resistor ratio
+    lcd12864_write_com(0x81);
+    lcd12864_write_com(0x0f); // set the V0 output voltage electronic volume
+    lcd12864_write_com(0xac); //close static indicator
+    lcd12864_write_com(0xf8); // booster ratio select mode set
+    lcd12864_write_com(0x01); // booster ratio register set 5X
+    // set display location
+    lcd12864_write_com(0x01); // line 1
+    lcd12864_write_com(0xb0); // page 0
+    lcd12864_write_com(0x10); // column address : High 4 bits
+    lcd12864_write_com(0x00); // column address : low 4 bits
 
+    lcd12864_write_com(0xaf);// display on
 }
 
 /*
@@ -114,6 +132,11 @@ int mian()
     pinMode(D7,OUTPUT);
 
     lcd12864_init();
-    
+
+    while(1)
+    {
+        lcd12864_write_data("a");
+    }
+
     return 0;
 }
